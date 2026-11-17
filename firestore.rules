@@ -1,0 +1,544 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rede de segurança global: negar tudo por padrão
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitivas globais endurecidas ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // --- Validadores de esquema ---
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+        data.homeCityCode is string && data.homeCityCode.size() >= 2 && data.homeCityCode.size() <= 32 &&
+        data.role in ['citizen', 'operator', 'municipal_manager', 'super_admin'] &&
+        data.acceptedPrivacyVersion is string && data.acceptedPrivacyVersion.size() >= 1 && data.acceptedPrivacyVersion.size() <= 24 &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 160)) &&
+        (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 500));
+    }
+
+    function isValidCategory(data) {
+      return data.slug is string && data.slug.size() >= 2 && data.slug.size() <= 64 &&
+        data.slug.matches('^[a-z0-9\\-]+$') &&
+        data.title is string && data.title.size() >= 2 && data.title.size() <= 80 &&
+        data.description is string && data.description.size() >= 4 && data.description.size() <= 300 &&
+        data.defaultSeverity in ['low', 'medium', 'high', 'critical'] &&
+        data.active is bool;
+    }
+
+    function isValidIncident(data) {
+      return data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 &&
+        data.cityCode is string && data.cityCode.size() >= 2 && data.cityCode.size() <= 32 &&
+        data.categorySlug is string && data.categorySlug.size() >= 2 && data.categorySlug.size() <= 64 &&
+        data.categorySlug.matches('^[a-z0-9\\-]+$') &&
+        data.title is string && data.title.size() >= 4 && data.title.size() <= 120 &&
+        data.description is string && data.description.size() >= 10 && data.description.size() <= 1000 &&
+        data.severity in ['low', 'medium', 'high', 'critical'] &&
+        data.status in ['open', 'under_review', 'in_progress', 'resolved', 'rejected'] &&
+        data.latitude is number && data.latitude >= -90.0 && data.latitude <= 90.0 &&
+        data.longitude is number && data.longitude >= -180.0 && data.longitude <= 180.0 &&
+        !(data.latitude == 0.0 && data.longitude == 0.0) &&
+        data.stillExistsCount is int && data.stillExistsCount >= 0 &&
+        data.suggestResolvedCount is int && data.suggestResolvedCount >= 0 &&
+        data.idempotencyKey is string && data.idempotencyKey.size() >= 8 && data.idempotencyKey.size() <= 64 &&
+        (!('addressLabel' in data) || (data.addressLabel is string && data.addressLabel.size() <= 160)) &&
+        (!('publicImageUrl' in data) || (data.publicImageUrl is string && data.publicImageUrl.size() <= 500));
+    }
+
+    function isValidAgency(data) {
+      return data.cityCode is string && data.cityCode.size() >= 2 && data.cityCode.size() <= 32 &&
+        data.acronym is string && data.acronym.size() >= 2 && data.acronym.size() <= 24 &&
+        data.name is string && data.name.size() >= 3 && data.name.size() <= 140 &&
+        data.competenceSummary is string && data.competenceSummary.size() >= 10 && data.competenceSummary.size() <= 400 &&
+        data.categorySlugs is list && data.categorySlugs.size() >= 1 && data.categorySlugs.size() <= 20 &&
+        data.serviceAreaLabel is string && data.serviceAreaLabel.size() >= 2 && data.serviceAreaLabel.size() <= 120 &&
+        data.officialChannelLabel is string && data.officialChannelLabel.size() >= 3 && data.officialChannelLabel.size() <= 120 &&
+        data.lastVerifiedAtLabel is string && data.lastVerifiedAtLabel.size() >= 4 && data.lastVerifiedAtLabel.size() <= 32 &&
+        data.active is bool &&
+        (!('officialPortalUrl' in data) || (data.officialPortalUrl is string && data.officialPortalUrl.size() <= 300)) &&
+        (!('officialPhone' in data) || (data.officialPhone is string && data.officialPhone.size() <= 32));
+    }
+
+    function isValidConfirmation(data) {
+      return data.incidentId is string && isValidId(data.incidentId) &&
+        data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.confirmationType in ['still_exists', 'suggest_resolved'] &&
+        data.cityCode is string && data.cityCode.size() >= 2 && data.cityCode.size() <= 32;
+    }
+
+    function isValidStatusHistory(data) {
+      return data.incidentId is string && isValidId(data.incidentId) &&
+        data.previousStatus in ['open', 'under_review', 'in_progress', 'resolved', 'rejected'] &&
+        data.newStatus in ['open', 'under_review', 'in_progress', 'resolved', 'rejected'] &&
+        data.previousStatus != data.newStatus &&
+        data.reason is string && data.reason.size() >= 3 && data.reason.size() <= 300 &&
+        data.changedByUid is string && data.changedByUid.size() >= 1 && data.changedByUid.size() <= 128;
+    }
+
+    function isValidAuditLog(data) {
+      return data.action in ['incident_status_updated', 'category_saved', 'agency_saved'] &&
+        data.actorUid is string && data.actorUid.size() >= 1 && data.actorUid.size() <= 128 &&
+        data.targetType in ['incident', 'category', 'agency'] &&
+        data.targetId is string && data.targetId.size() >= 1 && data.targetId.size() <= 128 &&
+        data.summary is string && data.summary.size() >= 3 && data.summary.size() <= 300;
+    }
+
+    function isValidAiTelemetry(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.mode in ['ai_suggested', 'manual_fallback', 'ai_error'] &&
+        data.modelName is string && data.modelName.size() >= 2 && data.modelName.size() <= 80 &&
+        data.latencyMs is int && data.latencyMs >= 0 && data.latencyMs <= 300000 &&
+        (!('confidence' in data) || (data.confidence is number && data.confidence >= 0.0 && data.confidence <= 1.0));
+    }
+
+    function confirmationPath(incidentId, userId, confirmationType) {
+      return /databases/$(database)/documents/incident_confirmations/$(incidentId + '_' + userId + '_' + confirmationType);
+    }
+
+    // --- Perfis de usuários (PII isolada ao próprio dono ou administrador) ---
+    match /profiles/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        incoming().keys().hasAll([
+          'userId',
+          'displayName',
+          'homeCityCode',
+          'role',
+          'acceptedPrivacyVersion',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'userId',
+          'displayName',
+          'email',
+          'photoUrl',
+          'homeCityCode',
+          'role',
+          'acceptedPrivacyVersion',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().userId == request.auth.uid &&
+        incoming().role == 'citizen' &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+        isValidUserProfile(incoming());
+
+      allow update: if isSignedIn() &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time && (
+          (
+            isOwner(userId) &&
+            incoming().role == existing().role &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'displayName',
+              'email',
+              'photoUrl',
+              'homeCityCode',
+              'acceptedPrivacyVersion',
+              'updatedAt'
+            ])
+          ) ||
+          (
+            isAdmin() &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'role',
+              'homeCityCode',
+              'updatedAt'
+            ])
+          )
+        );
+
+      allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+    }
+
+    // --- Registro de administradores ---
+    match /admins/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list, create, update, delete: if false;
+    }
+
+    // --- Categorias urbanas públicas ---
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId);
+      allow list: if true;
+
+      allow create: if isAdmin() &&
+        isValidId(categoryId) &&
+        incoming().keys().hasAll([
+          'slug',
+          'title',
+          'description',
+          'defaultSeverity',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'slug',
+          'title',
+          'description',
+          'defaultSeverity',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+        isValidCategory(incoming());
+
+      allow update: if isAdmin() &&
+        isValidId(categoryId) &&
+        isValidCategory(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'slug',
+          'title',
+          'description',
+          'defaultSeverity',
+          'active',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin() && isValidId(categoryId);
+    }
+
+    // --- Órgãos públicos responsáveis (leitura pública, escrita administrativa) ---
+    match /agencies/{agencyId} {
+      allow get: if isValidId(agencyId);
+      allow list: if true;
+
+      allow create: if isAdmin() &&
+        isValidId(agencyId) &&
+        incoming().keys().hasAll([
+          'cityCode',
+          'acronym',
+          'name',
+          'competenceSummary',
+          'categorySlugs',
+          'serviceAreaLabel',
+          'officialChannelLabel',
+          'lastVerifiedAtLabel',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'cityCode',
+          'acronym',
+          'name',
+          'competenceSummary',
+          'categorySlugs',
+          'serviceAreaLabel',
+          'officialChannelLabel',
+          'officialPortalUrl',
+          'officialPhone',
+          'lastVerifiedAtLabel',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+        isValidAgency(incoming());
+
+      allow update: if isAdmin() &&
+        isValidId(agencyId) &&
+        isValidAgency(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'cityCode',
+          'acronym',
+          'name',
+          'competenceSummary',
+          'categorySlugs',
+          'serviceAreaLabel',
+          'officialChannelLabel',
+          'officialPortalUrl',
+          'officialPhone',
+          'lastVerifiedAtLabel',
+          'active',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin() && isValidId(agencyId);
+    }
+
+    // --- Ocorrências públicas (sem PII; consulta pública paginada para visitantes) ---
+    match /incidents/{incidentId} {
+      allow get: if isValidId(incidentId);
+      allow list: if request.query.limit != null && request.query.limit <= 200;
+
+      allow create: if isSignedIn() &&
+        isValidId(incidentId) &&
+        incoming().keys().hasAll([
+          'authorId',
+          'cityCode',
+          'categorySlug',
+          'title',
+          'description',
+          'severity',
+          'status',
+          'latitude',
+          'longitude',
+          'stillExistsCount',
+          'suggestResolvedCount',
+          'idempotencyKey',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'authorId',
+          'cityCode',
+          'categorySlug',
+          'title',
+          'description',
+          'severity',
+          'status',
+          'latitude',
+          'longitude',
+          'addressLabel',
+          'publicImageUrl',
+          'stillExistsCount',
+          'suggestResolvedCount',
+          'idempotencyKey',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        incoming().authorId == request.auth.uid &&
+        incoming().status == 'open' &&
+        incoming().stillExistsCount == 0 &&
+        incoming().suggestResolvedCount == 0 &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+        isValidIncident(incoming());
+
+      allow update: if isSignedIn() &&
+        isValidId(incidentId) &&
+        isValidIncident(incoming()) &&
+        incoming().authorId == existing().authorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().idempotencyKey == existing().idempotencyKey &&
+        incoming().updatedAt is timestamp && incoming().updatedAt <= request.time && (
+          // Autor pode ajustar texto/categoria/gravidade apenas enquanto ainda estiver 'open'
+          (
+            existing().authorId == request.auth.uid &&
+            existing().status == 'open' &&
+            incoming().status == existing().status &&
+            incoming().stillExistsCount == existing().stillExistsCount &&
+            incoming().suggestResolvedCount == existing().suggestResolvedCount &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'categorySlug',
+              'title',
+              'description',
+              'severity',
+              'addressLabel',
+              'updatedAt'
+            ])
+          ) ||
+          // Cidadão autenticado incrementa +1 'still_exists' em transação atômica (sem alterar status)
+          (
+            incoming().status == existing().status &&
+            incoming().stillExistsCount == existing().stillExistsCount + 1 &&
+            incoming().suggestResolvedCount == existing().suggestResolvedCount &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'stillExistsCount',
+              'updatedAt'
+            ]) &&
+            !exists(confirmationPath(incidentId, request.auth.uid, 'still_exists')) &&
+            existsAfter(confirmationPath(incidentId, request.auth.uid, 'still_exists'))
+          ) ||
+          // Cidadão autenticado incrementa +1 'suggest_resolved' em transação atômica (sem alterar status)
+          (
+            incoming().status == existing().status &&
+            incoming().stillExistsCount == existing().stillExistsCount &&
+            incoming().suggestResolvedCount == existing().suggestResolvedCount + 1 &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'suggestResolvedCount',
+              'updatedAt'
+            ]) &&
+            !exists(confirmationPath(incidentId, request.auth.uid, 'suggest_resolved')) &&
+            existsAfter(confirmationPath(incidentId, request.auth.uid, 'suggest_resolved'))
+          ) ||
+          // Administrador pode alterar status/classificação
+          (
+            isAdmin() &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'categorySlug',
+              'severity',
+              'status',
+              'updatedAt'
+            ])
+          )
+        );
+
+      allow delete: if isValidId(incidentId) && (
+        isAdmin() || (isSignedIn() && existing().authorId == request.auth.uid && existing().status == 'open')
+      );
+    }
+
+    // --- Confirmações comunitárias únicas por usuário/ocorrência/tipo ---
+    match /incident_confirmations/{confirmationId} {
+      allow get: if isValidId(confirmationId) && isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+        isValidId(confirmationId) &&
+        incoming().keys().hasAll([
+          'incidentId',
+          'userId',
+          'confirmationType',
+          'cityCode',
+          'createdAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'incidentId',
+          'userId',
+          'confirmationType',
+          'cityCode',
+          'createdAt'
+        ]) &&
+        incoming().userId == request.auth.uid &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        isValidConfirmation(incoming()) &&
+        confirmationId == incoming().incidentId + '_' + request.auth.uid + '_' + incoming().confirmationType &&
+        exists(/databases/$(database)/documents/incidents/$(incoming().incidentId));
+
+      allow update: if false;
+      allow delete: if isAdmin() && isValidId(confirmationId);
+    }
+
+    // --- Histórico oficial de mudanças de status (imutável; escrito apenas por administradores) ---
+    match /incident_status_history/{historyId} {
+      allow get: if isValidId(historyId);
+      allow list: if request.query.limit != null && request.query.limit <= 100;
+
+      allow create: if isAdmin() &&
+        isValidId(historyId) &&
+        incoming().keys().hasAll([
+          'incidentId',
+          'previousStatus',
+          'newStatus',
+          'reason',
+          'changedByUid',
+          'createdAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'incidentId',
+          'previousStatus',
+          'newStatus',
+          'reason',
+          'changedByUid',
+          'createdAt'
+        ]) &&
+        incoming().changedByUid == request.auth.uid &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        isValidStatusHistory(incoming()) &&
+        exists(/databases/$(database)/documents/incidents/$(incoming().incidentId));
+
+      allow update, delete: if false;
+    }
+
+    // --- Logs imutáveis de auditoria administrativa ---
+    match /audit_logs/{logId} {
+      allow get: if isAdmin() && isValidId(logId);
+      allow list: if isAdmin() && request.query.limit != null && request.query.limit <= 100;
+
+      allow create: if isAdmin() &&
+        isValidId(logId) &&
+        incoming().keys().hasAll([
+          'action',
+          'actorUid',
+          'targetType',
+          'targetId',
+          'summary',
+          'createdAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'action',
+          'actorUid',
+          'targetType',
+          'targetId',
+          'summary',
+          'createdAt'
+        ]) &&
+        incoming().actorUid == request.auth.uid &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        isValidAuditLog(incoming());
+
+      allow update, delete: if false;
+    }
+
+    // --- Telemetria não sensível da IA (gravada pelo usuário autenticado, lida apenas por admins) ---
+    match /ai_telemetry/{telemetryId} {
+      allow get: if isAdmin() && isValidId(telemetryId);
+      allow list: if isAdmin() && request.query.limit != null && request.query.limit <= 100;
+
+      allow create: if isSignedIn() &&
+        isValidId(telemetryId) &&
+        incoming().keys().hasAll([
+          'userId',
+          'mode',
+          'modelName',
+          'latencyMs',
+          'createdAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'userId',
+          'mode',
+          'modelName',
+          'confidence',
+          'latencyMs',
+          'createdAt'
+        ]) &&
+        incoming().userId == request.auth.uid &&
+        incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+        isValidAiTelemetry(incoming());
+
+      allow update, delete: if false;
+    }
+  }
+}

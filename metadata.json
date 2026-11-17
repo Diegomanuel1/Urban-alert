@@ -1,0 +1,6 @@
+{
+  "name": "Urban Alert",
+  "description": "Plataforma cívica geolocalizada para identificação, registro assistido por IA e acompanhamento comunitário de problemas urbanos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

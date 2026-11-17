@@ -1,0 +1,254 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Perfil do cidadão autenticado com vínculo de cidade-piloto, papel imutável pelo cliente e registro de consentimento LGPD.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "homeCityCode": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["citizen", "operator", "municipal_manager", "super_admin"]
+        },
+        "acceptedPrivacyVersion": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "homeCityCode",
+        "role",
+        "acceptedPrivacyVersion",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Registro confiável de administradores gerenciado apenas pelo servidor/console.",
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["operator", "municipal_manager", "super_admin"]
+        },
+        "organizationId": { "type": "string" }
+      },
+      "required": ["role"]
+    },
+    "UrbanCategoryDoc": {
+      "title": "UrbanCategoryDoc",
+      "description": "Categoria oficial de problemas urbanos para classificação e filtros públicos.",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "defaultSeverity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "slug",
+        "title",
+        "description",
+        "defaultSeverity",
+        "active",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Incident": {
+      "title": "Incident",
+      "description": "Ocorrência urbana pública (sem PII ou imagens originais privadas).",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "cityCode": { "type": "string" },
+        "categorySlug": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "under_review", "in_progress", "resolved", "rejected"]
+        },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "addressLabel": { "type": "string" },
+        "publicImageUrl": { "type": "string" },
+        "stillExistsCount": { "type": "integer" },
+        "suggestResolvedCount": { "type": "integer" },
+        "idempotencyKey": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "authorId",
+        "cityCode",
+        "categorySlug",
+        "title",
+        "description",
+        "severity",
+        "status",
+        "latitude",
+        "longitude",
+        "stillExistsCount",
+        "suggestResolvedCount",
+        "idempotencyKey",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PublicAgency": {
+      "title": "PublicAgency",
+      "description": "Órgão público ou concessionária responsável por categorias urbanas em um município.",
+      "type": "object",
+      "properties": {
+        "cityCode": { "type": "string" },
+        "acronym": { "type": "string" },
+        "name": { "type": "string" },
+        "competenceSummary": { "type": "string" },
+        "categorySlugs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "serviceAreaLabel": { "type": "string" },
+        "officialChannelLabel": { "type": "string" },
+        "officialPortalUrl": { "type": "string" },
+        "officialPhone": { "type": "string" },
+        "lastVerifiedAtLabel": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "cityCode",
+        "acronym",
+        "name",
+        "competenceSummary",
+        "categorySlugs",
+        "serviceAreaLabel",
+        "officialChannelLabel",
+        "lastVerifiedAtLabel",
+        "active",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "IncidentConfirmation": {
+      "title": "IncidentConfirmation",
+      "description": "Confirmação comunitária única por usuário, ocorrência e tipo.",
+      "type": "object",
+      "properties": {
+        "incidentId": { "type": "string" },
+        "userId": { "type": "string" },
+        "confirmationType": {
+          "type": "string",
+          "enum": ["still_exists", "suggest_resolved"]
+        },
+        "cityCode": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "incidentId",
+        "userId",
+        "confirmationType",
+        "cityCode",
+        "createdAt"
+      ]
+    },
+    "IncidentStatusHistory": {
+      "title": "IncidentStatusHistory",
+      "description": "Histórico oficial imutável de transições de status realizadas por administradores.",
+      "type": "object",
+      "properties": {
+        "incidentId": { "type": "string" },
+        "previousStatus": { "type": "string" },
+        "newStatus": { "type": "string" },
+        "reason": { "type": "string" },
+        "changedByUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["incidentId", "previousStatus", "newStatus", "reason", "changedByUid", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Registro imutável de auditoria das operações administrativas.",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "actorUid": { "type": "string" },
+        "targetType": { "type": "string" },
+        "targetId": { "type": "string" },
+        "summary": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "actorUid", "targetType", "targetId", "summary", "createdAt"]
+    },
+    "AiTelemetry": {
+      "title": "AiTelemetry",
+      "description": "Telemetria não sensível de uso, confiança e fallback do modelo Gemini.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "mode": { "type": "string" },
+        "modelName": { "type": "string" },
+        "confidence": { "type": "number" },
+        "latencyMs": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "mode", "modelName", "latencyMs", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/profiles/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Perfis individuais isolados por UID do Firebase Auth."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Lista de verificação administrativa protegida contra escrita pelo cliente."
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/UrbanCategoryDoc" },
+      "description": "Catálogo público de categorias urbanas gerenciado por administradores."
+    },
+    "/agencies/{agencyId}": {
+      "schema": { "$ref": "#/entities/PublicAgency" },
+      "description": "Órgãos públicos responsáveis com canais oficiais verificados."
+    },
+    "/incidents/{incidentId}": {
+      "schema": { "$ref": "#/entities/Incident" },
+      "description": "Ocorrências urbanas públicas consultáveis no mapa por área visível."
+    },
+    "/incident_confirmations/{confirmationId}": {
+      "schema": { "$ref": "#/entities/IncidentConfirmation" },
+      "description": "Confirmações comunitárias com unicidade por usuário e tipo."
+    },
+    "/incident_status_history/{historyId}": {
+      "schema": { "$ref": "#/entities/IncidentStatusHistory" },
+      "description": "Histórico imutável de mudanças oficiais de status."
+    },
+    "/audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Logs imutáveis de auditoria acessíveis apenas a administradores."
+    },
+    "/ai_telemetry/{telemetryId}": {
+      "schema": { "$ref": "#/entities/AiTelemetry" },
+      "description": "Telemetria de desempenho e fallback da IA para monitoramento administrativo."
+    }
+  }
+}

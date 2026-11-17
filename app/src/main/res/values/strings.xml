@@ -1,0 +1,225 @@
+<resources>
+    <string name="app_name">Urban Alert</string>
+
+    <!-- Cabeçalho e Cidade-Piloto -->
+    <string name="foundation_brand_title">Urban Alert AI</string>
+    <string name="foundation_brand_subtitle">Monitoramento cívico colaborativo</string>
+    <string name="foundation_pilot_badge">Piloto: Salvador, BA</string>
+    <string name="foundation_milestone_badge">M10 · Pronto</string>
+
+    <!-- Cartão Cartográfico Introdutório -->
+    <string name="foundation_hero_title">Mapa público de Salvador ativo</string>
+    <string name="foundation_hero_description">Consulta pública por área visível sem necessidade de login, agrupamento por zoom, filtros e GPS em tempo real.</string>
+    <string name="foundation_stack_label">Arquitetura: Kotlin + Compose · Room Offline · Firebase + Gemini</string>
+
+    <!-- Seções de Domínio -->
+    <string name="foundation_categories_title">Categorias urbanas previstas</string>
+    <string name="foundation_categories_hint">Toque em uma categoria para inspecionar a descrição e os metadados do domínio.</string>
+    <string name="foundation_semantics_title">Gravidade e status independentes</string>
+    <string name="foundation_semantics_hint">Classificados sempre com ícone e texto acessível, nunca apenas por cor.</string>
+    <string name="foundation_severity_group">Níveis de gravidade</string>
+    <string name="foundation_status_group">Status da ocorrência</string>
+    <string name="foundation_roadmap_title">Próximos marcos</string>
+    <string name="foundation_roadmap_next">Todos os marcos M1–M10 concluídos · Pronto para publicação</string>
+
+    <!-- Navegação -->
+    <string name="nav_map">Mapa</string>
+    <string name="nav_project">Projeto</string>
+    <string name="nav_explore">Explorar</string>
+    <string name="nav_privacy">Privacidade</string>
+    <string name="nav_account">Conta</string>
+
+    <!-- Mapa Público e Detalhes (M4) -->
+    <string name="map_search_placeholder">Buscar bairro ou rua em Salvador...</string>
+    <string name="map_filters_title">Filtrar por categoria e situação</string>
+    <string name="map_clear_filters">Limpar</string>
+    <string name="map_location_permission_denied">Permissão de localização recusada. Você pode buscar um bairro manualmente acima.</string>
+    <string name="map_loading_area">Consultando ocorrências na área...</string>
+    <string name="map_empty_area_title">Nenhuma ocorrência nesta área</string>
+    <string name="map_empty_area_subtitle">Movimente o mapa ou ajuste os filtros. Novos registros entram no M5.</string>
+    <string name="map_area_count_title">%1$d ocorrências nesta área</string>
+    <string name="map_tap_pin_hint">Toque em um marcador para ver detalhes públicos.</string>
+    <string name="map_list_button">Lista</string>
+    <string name="map_area_list_title">Ocorrências visíveis (%1$d)</string>
+    <string name="map_empty_area_body">Nenhuma ocorrência pública encontrada dentro da região atual do mapa.</string>
+    <string name="map_view_details_button">Ver detalhes</string>
+
+    <string name="incident_detail_title">Detalhes da ocorrência</string>
+    <string name="incident_not_found">Esta ocorrência não foi encontrada ou foi removida.</string>
+    <string name="incident_community_title">Acompanhamento comunitário</string>
+    <string name="incident_still_exists_label">Ainda existe</string>
+    <string name="incident_suggest_resolved_label">Aparenta resolvida</string>
+    <string name="incident_community_disclaimer">Confirmações comunitárias ajudam na priorização, mas não equivalem a uma resolução oficial da prefeitura.</string>
+
+    <!-- Privacidade e Mídias (M3) -->
+    <string name="privacy_screen_title">Privacidade e Mídias (LGPD)</string>
+    <string name="privacy_screen_subtitle">Como protegemos sua identidade, suas fotos e seus dados antes de qualquer envio.</string>
+    <string name="privacy_media_lab_title">Sanitizador de imagens (EXIF)</string>
+    <string name="privacy_media_lab_description">Selecione uma foto via Android Photo Picker (sem pedir acesso amplo à galeria). O aplicativo reprocessa a imagem em pasta privada, removendo coordenadas GPS e dados do aparelho.</string>
+    <string name="privacy_pick_photo_button">Selecionar foto para sanitizar</string>
+    <string name="privacy_clear_photo_button">Remover cópia local</string>
+    <string name="privacy_pillar_1_title">1. Minimização de dados e EXIF</string>
+    <string name="privacy_pillar_1_body">Fotos originais nunca são expostas no mapa público. Metadados EXIF como modelo do celular, data original e GPS embutido são removidos localmente antes da análise.</string>
+    <string name="privacy_pillar_2_title">2. Controle humano e IA responsável</string>
+    <string name="privacy_pillar_2_body">A inteligência artificial apenas sugere categoria, gravidade e descrição técnica. Nenhuma ocorrência é publicada sem revisão e confirmação expressa do cidadão.</string>
+    <string name="privacy_pillar_3_title">3. Direitos do titular (LGPD)</string>
+    <string name="privacy_pillar_3_body">Você pode consultar o mapa sem login, editar seu perfil a qualquer momento e excluir definitivamente sua conta e seus dados na aba Conta.</string>
+
+    <!-- Autenticação e Perfil (M2) -->
+    <string name="auth_title">Entre com sua conta Google</string>
+    <string name="auth_subtitle">Visitantes podem consultar o mapa livremente. O login identifica suas ocorrências, confirmações comunitárias e protege contra spam.</string>
+    <string name="auth_google_button">Entrar com Google</string>
+    <string name="auth_guest_button">Continuar como visitante</string>
+    <string name="auth_lgpd_title">Privacidade e LGPD</string>
+    <string name="auth_lgpd_body">Seu e-mail e dados pessoais nunca ficam visíveis no mapa público. Você pode editar ou excluir sua conta e seus dados a qualquer momento.</string>
+    <string name="auth_apple_note">Login Apple previsto em evolução futura para fluxo OAuth externo.</string>
+
+    <string name="profile_title">Meu perfil cidadão</string>
+    <string name="profile_display_name_label">Nome de exibição</string>
+    <string name="profile_city_label">Cidade principal</string>
+    <string name="profile_role_label">Função verificada</string>
+    <string name="profile_role_citizen">Cidadão (padrão)</string>
+    <string name="profile_role_operator">Operador</string>
+    <string name="profile_role_manager">Gestor municipal</string>
+    <string name="profile_role_admin">Superadministrador</string>
+    <string name="profile_save_button">Salvar alterações</string>
+    <string name="profile_sign_out_button">Sair da conta</string>
+    <string name="profile_delete_button">Excluir conta e dados (LGPD)</string>
+    <string name="profile_delete_dialog_title">Excluir conta e perfil?</string>
+    <string name="profile_delete_dialog_body">Esta ação remove permanentemente seu perfil do banco de dados e encerra sua conta autenticada. Não pode ser desfeita.</string>
+    <string name="profile_delete_confirm">Confirmar exclusão</string>
+    <string name="profile_delete_cancel">Cancelar</string>
+
+    <!-- Gravidade -->
+    <string name="severity_low">Baixa</string>
+    <string name="severity_medium">Média</string>
+    <string name="severity_high">Alta</string>
+    <string name="severity_critical">Crítica</string>
+
+    <!-- Status -->
+    <string name="status_open">Aberta</string>
+    <string name="status_under_review">Em análise</string>
+    <string name="status_in_progress">Em andamento</string>
+    <string name="status_resolved">Resolvida</string>
+    <string name="status_rejected">Rejeitada</string>
+
+    <!-- Estado de Sincronização -->
+    <string name="sync_state_draft">Rascunho local</string>
+    <string name="sync_state_pending">Aguardando envio</string>
+    <string name="sync_state_syncing">Sincronizando</string>
+    <string name="sync_state_synced">Sincronizada</string>
+    <string name="sync_state_failed">Falha na sincronização</string>
+
+    <!-- Acessibilidade -->
+    <string name="cd_brand_emblem">Emblema do Urban Alert AI</string>
+    <string name="cd_pilot_location">Localização da cidade-piloto Salvador, Bahia</string>
+    <string name="cd_category_icon">Ícone da categoria urbana</string>
+    <string name="cd_severity_icon">Ícone de nível de gravidade</string>
+    <string name="cd_status_icon">Ícone de status da ocorrência</string>
+    <string name="cd_roadmap_icon">Ícone do marco do roadmap</string>
+    <string name="cd_user_avatar">Foto de perfil do cidadão</string>
+    <string name="cd_security_icon">Ícone de segurança e privacidade</string>
+    <string name="cd_sanitized_photo_preview">Pré-visualização da foto sanitizada sem EXIF</string>
+    <string name="cd_nav_map">Aba mapa público de Salvador</string>
+    <string name="cd_nav_explore">Aba resumo do projeto</string>
+    <string name="cd_nav_privacy">Aba privacidade e segurança de mídias</string>
+    <string name="cd_nav_account">Aba conta e perfil</string>
+    <string name="cd_search_location">Buscar localização em Salvador</string>
+    <string name="cd_clear_search">Limpar texto ou fechar</string>
+    <string name="cd_toggle_filters">Abrir ou fechar filtros do mapa</string>
+    <string name="cd_my_location">Centralizar na minha localização GPS</string>
+    <string name="cd_zoom_in">Aproximar mapa</string>
+    <string name="cd_zoom_out">Afastar mapa</string>
+    <string name="cd_recenter_salvador">Centralizar mapa em Salvador</string>
+    <string name="cd_back_button">Voltar para o mapa</string>
+    <string name="cd_incident_public_photo">Foto pública sanitizada da ocorrência</string>
+
+    <!-- Agente Conversacional e IA Multimodal (M5) -->
+    <string name="nav_report">Reportar</string>
+    <string name="cd_nav_report">Aba reportar ocorrência com assistente</string>
+    <string name="map_fab_report">Reportar</string>
+    <string name="report_chat_title">Assistente de Ocorrência</string>
+    <string name="report_new_session">Novo relato</string>
+    <string name="report_take_photo">Câmera</string>
+    <string name="report_pick_photo">Galeria</string>
+    <string name="report_use_gps">GPS atual</string>
+    <string name="report_use_address">Endereço</string>
+    <string name="report_use_salvador_center">Centro SSA</string>
+    <string name="report_message_placeholder">Descreva o problema urbano...</string>
+    <string name="report_analyze_ai_button">Analisar com IA</string>
+    <string name="report_manual_button">Preencher manual</string>
+    <string name="report_analyzing_label">Analisando imagem e relato com Gemini...</string>
+    <string name="report_address_dialog_title">Informar bairro ou rua em Salvador</string>
+    <string name="report_address_dialog_hint">Ex.: Av. Sete de Setembro, Barra</string>
+
+    <string name="review_screen_title">Revisar antes de publicar</string>
+    <string name="review_human_control_banner">Revise e ajuste os campos abaixo. A IA apenas sugere — você decide o que vai para o mapa.</string>
+    <string name="review_ai_confidence">Sugestão Gemini · Confiança %1$d%%</string>
+    <string name="review_category_label">Categoria urbana</string>
+    <string name="review_severity_label">Gravidade estimada</string>
+    <string name="review_title_label">Título curto</string>
+    <string name="review_description_label">Descrição detalhada</string>
+    <string name="review_address_label">Referência de endereço</string>
+    <string name="review_photo_privacy_note">Foto sanitizada (EXIF/GPS removidos) preservada em armazenamento privado local.</string>
+    <string name="review_login_required_title">Entre com Google para publicar no mapa</string>
+    <string name="review_login_required_body">Seu rascunho já está pronto e seguro. Faça login para publicar sua ocorrência no mapa público.</string>
+    <string name="review_login_button">Entrar com Google</string>
+    <string name="review_publish_button">Confirmar e publicar no mapa</string>
+    <string name="review_back_to_chat">Voltar ao assistente</string>
+    <string name="report_published_title">Ocorrência publicada no mapa</string>
+    <string name="report_published_body">Obrigado por colaborar com Salvador! Sua ocorrência já está disponível para consulta pública.</string>
+    <string name="report_view_on_map">Ver no mapa</string>
+    <string name="cd_send_message">Enviar descrição ao assistente</string>
+    <string name="cd_attached_photo">Foto anexada e sanitizada</string>
+
+    <!-- Offline, Room SQLite e Fila de Sincronização (M6) -->
+    <string name="offline_queue_title">Rascunhos e fila offline</string>
+    <string name="offline_queue_subtitle">Seus rascunhos locais e envios pendentes ficam salvos em SQLite no aparelho, separados do status oficial no servidor.</string>
+    <string name="offline_status_banner_offline">Sem conexão no momento. Rascunhos confirmados serão salvos na fila offline.</string>
+    <string name="offline_save_queue_button">Salvar na fila offline</string>
+    <string name="offline_queued_title">Salvo na fila offline</string>
+    <string name="offline_queued_body">Seu relato validado foi armazenado no aparelho com chave de idempotência e será enviado ao mapa assim que houver conexão e login.</string>
+    <string name="offline_open_queue_button">Ver fila offline</string>
+    <string name="offline_sync_now_button">Sincronizar pendentes</string>
+    <string name="offline_cleanup_button">Limpar itens antigos</string>
+    <string name="offline_empty_queue">Nenhum rascunho ou item pendente armazenado localmente.</string>
+    <string name="offline_delete_draft_cd">Excluir rascunho local</string>
+    <string name="cd_offline_queue_icon">Abrir rascunhos e fila de sincronização offline</string>
+    <string name="cd_sync_state_icon">Ícone do estado local de sincronização</string>
+
+    <!-- Comunidade e Órgãos Públicos (M7) -->
+    <string name="community_confirm_still_exists_cta">Confirmar que ainda existe</string>
+    <string name="community_confirm_still_exists_done">Você confirmou que existe</string>
+    <string name="community_confirm_resolved_cta">Sinalizar como resolvida</string>
+    <string name="community_confirm_resolved_done">Você sinalizou como resolvida</string>
+    <string name="community_login_prompt">Entre com sua conta Google para confirmar se este problema continua ou já foi resolvido.</string>
+    <string name="community_login_button">Entrar com Google</string>
+    <string name="community_confirmed_success">Sua confirmação comunitária foi registrada sem alterar o status oficial.</string>
+    <string name="community_already_confirmed">Você já enviou este tipo de confirmação para esta ocorrência.</string>
+    <string name="agency_section_title">Órgão público sugerido</string>
+    <string name="agency_service_area_label">Área atendida: %1$s</string>
+    <string name="agency_official_channel_label">Canal oficial: %1$s</string>
+    <string name="agency_verified_date_label">Verificado em %1$s</string>
+    <string name="agency_open_portal_button">Abrir portal oficial</string>
+    <string name="agency_call_channel_button">Ligar (%1$s)</string>
+    <string name="agency_transparency_note">Orientação informativa: registrar aqui não abre protocolo automático nos sistemas da prefeitura.</string>
+    <string name="cd_agency_icon">Ícone de órgão público responsável</string>
+
+    <!-- Painel Administrativo (M8) -->
+    <string name="profile_open_admin_title">Gestão Municipal Autorizada</string>
+    <string name="profile_open_admin_body">Sua conta possui permissão administrativa verificada para triagem, relatórios, catálogo e auditoria.</string>
+    <string name="profile_open_admin_button">Abrir Painel Administrativo</string>
+    <string name="admin_panel_title">Painel Administrativo</string>
+    <string name="admin_panel_subtitle">Operações auditáveis protegidas por verificação de função em /admins.</string>
+    <string name="admin_tab_reports">Relatórios</string>
+    <string name="admin_tab_triage">Triagem</string>
+    <string name="admin_tab_catalog">Catálogo</string>
+    <string name="admin_tab_audit">IA e Auditoria</string>
+    <string name="admin_change_status_button">Atualizar status oficial</string>
+    <string name="admin_transition_dialog_title">Transição oficial de status</string>
+    <string name="admin_transition_reason_label">Motivo técnico / despacho (mín. 3 caracteres)</string>
+    <string name="admin_add_category_button">Nova categoria</string>
+    <string name="admin_add_agency_button">Novo órgão</string>
+    <string name="admin_save_action">Salvar e auditar</string>
+    <string name="cd_admin_icon">Ícone do painel administrativo</string>
+</resources>
